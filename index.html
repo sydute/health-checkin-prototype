@@ -186,7 +186,7 @@
   .photo-add-icon { font-size: 36px; color: #b3b7bd; line-height: 1; }
   .photo-add-text { margin-top: 8px; font-size: 13px; color: #8a8f99; }
   .photo-preview { position: relative; width: 160px; height: 160px; margin: 0 auto; }
-  .photo-preview svg { width: 100%; height: 100%; border-radius: 10px; display: block; }
+  .photo-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; display: block; }
   .photo-remove {
     position: absolute; top: -10px; right: -10px; width: 26px; height: 26px;
     border-radius: 50%; background: rgba(0,0,0,0.6); color: #fff; font-size: 16px;
@@ -282,6 +282,20 @@
     transition: transform 0.25s ease; max-height: 60%; display: flex; flex-direction: column;
   }
   .mask.show .sheet { transform: translateY(0); }
+
+  /* ========== 照片来源选择（相册 / 拍照） ========== */
+  .photo-sheet { padding: 8px 16px 20px; }
+  .photo-sheet-title { text-align: center; font-size: 13px; color: #8a8f99; padding: 10px 0 14px; }
+  .photo-option {
+    display: block; width: 100%; background: #fff; border: none;
+    border-bottom: 1px solid #eceef2; padding: 15px; font-size: 16px;
+    color: #1a1a1a; cursor: pointer; font-family: inherit;
+  }
+  .photo-option:active { background: #f5f6f8; }
+  .photo-option.cancel {
+    border-bottom: none; border-radius: 12px; margin-top: 10px;
+    background: #f5f6f8; color: #5a5f66; font-weight: 600;
+  }
 
   /* ========== 响应式：仅展示用户界面，不保留任何说明区域 ========== */
   @media (max-width: 460px) {
@@ -426,6 +440,20 @@
       </div>
     </div>
   </div>
+
+  <!-- 照片来源选择弹层（相册 / 拍照） -->
+  <div class="mask" id="photoSheet">
+    <div class="sheet photo-sheet">
+      <div class="photo-sheet-title">上传照片</div>
+      <button class="photo-option" onclick="pickPhoto('album')">从本地相册选择图片</button>
+      <button class="photo-option" onclick="pickPhoto('camera')">使用相机拍照上传</button>
+      <button class="photo-option cancel" onclick="closeMask('photoSheet')">取消</button>
+    </div>
+  </div>
+
+  <!-- 隐藏的文件选择器：album=相册 / camera=相机（移动端唤起对应系统能力，桌面端回退为文件选择器） -->
+  <input type="file" id="fileAlbum" accept="image/*" style="display:none">
+  <input type="file" id="fileCamera" accept="image/*" capture="environment" style="display:none">
 
   <div class="toast" id="toast"></div>
 </div>
@@ -584,7 +612,7 @@ function renderWizard(kind) {
       photoArea = '<div class="photo-add" onclick="addPhoto(\'' + kind + '\')">'
         + '<span class="photo-add-icon">+</span><span class="photo-add-text">拍照 / 从相册选择</span></div>';
     } else {
-      photoArea = '<div class="photo-preview">' + fakePhotoSvg(kind)
+      photoArea = '<div class="photo-preview"><img src="' + d.photo + '" alt="已上传照片">'
         + '<span class="photo-remove" onclick="removePhoto(\'' + kind + '\')">×</span></div>';
     }
     html = '<div class="step-title">' + (isEx ? '上传本人照片（选填）' : '上传食物照片（选填）') + '</div>'
@@ -639,31 +667,6 @@ function isZeroAmount(v) {
 
 function escapeHtml(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-/* 模拟照片：内联 SVG，无外部资源 */
-function fakePhotoSvg(kind) {
-  if (kind === 'exercise') {
-    return '<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">'
-      + '<defs><linearGradient id="exg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9be7c4"/><stop offset="1" stop-color="#34c97b"/></linearGradient></defs>'
-      + '<rect width="160" height="160" fill="url(#exg)"/>'
-      + '<circle cx="128" cy="30" r="14" fill="#ffffff" opacity="0.85"/>'
-      + '<rect x="0" y="118" width="160" height="42" fill="#0ea968" opacity="0.55"/>'
-      + '<circle cx="72" cy="52" r="10" fill="#1a1a1a"/>'
-      + '<path d="M72 64 L66 96 M66 96 L48 118 M66 96 L86 116 M70 76 L48 84 M70 76 L94 70" stroke="#1a1a1a" stroke-width="7" stroke-linecap="round" fill="none"/>'
-      + '</svg>';
-  }
-  return '<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">'
-    + '<defs><linearGradient id="dtg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd9a0"/><stop offset="1" stop-color="#ffab4a"/></linearGradient></defs>'
-    + '<rect width="160" height="160" fill="url(#dtg)"/>'
-    + '<circle cx="80" cy="86" r="48" fill="#ffffff"/>'
-    + '<circle cx="80" cy="86" r="36" fill="#f0f1f4"/>'
-    + '<circle cx="68" cy="78" r="11" fill="#34c97b"/>'
-    + '<circle cx="92" cy="82" r="9" fill="#ff8c1a"/>'
-    + '<circle cx="78" cy="98" r="8" fill="#e25555"/>'
-    + '<rect x="20" y="46" width="4" height="80" rx="2" fill="#8a8f99"/>'
-    + '<rect x="136" y="46" width="4" height="80" rx="2" fill="#8a8f99"/>'
-    + '</svg>';
 }
 
 /* ================= 步骤流转 ================= */
@@ -952,12 +955,50 @@ document.getElementById('wheelSheet').addEventListener('click', function (e) {
   if (e.target === this) closeMask('wheelSheet');
 });
 
-/* ================= 照片模拟 ================= */
+/* ================= 照片上传（真实文件读取） ================= */
+var photoKind = null;   // 当前正在为哪个流程选照片
+
+/* 点击「拍照 / 从相册选择」：唤起来源选择弹层 */
 function addPhoto(kind) {
-  if (kind === 'exercise') state.exercise.photo = true; else state.diet.photo = true;
-  renderWizard(kind);
-  showToast('已添加照片（模拟）');
+  photoKind = kind;
+  document.getElementById('photoSheet').classList.add('show');
 }
+
+/* 选择来源：相册 / 相机。移动端唤起对应系统能力，桌面端回退为文件选择器 */
+function pickPhoto(mode) {
+  closeMask('photoSheet');
+  var input = document.getElementById(mode === 'camera' ? 'fileCamera' : 'fileAlbum');
+  input.value = '';   // 允许重复选择同一文件
+  input.click();
+}
+
+/* 文件选中后读取为 dataURL 并进入预览 */
+function handlePhotoFile(file) {
+  if (!file || !photoKind) return;
+  if (file.type && file.type.indexOf('image/') !== 0) { showToast('请选择图片文件'); return; }
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    if (photoKind === 'exercise') state.exercise.photo = e.target.result;
+    else state.diet.photo = e.target.result;
+    renderWizard(photoKind);
+    showToast('已添加照片');
+  };
+  reader.onerror = function () { showToast('图片读取失败，请重试'); };
+  reader.readAsDataURL(file);
+}
+
+document.getElementById('fileAlbum').addEventListener('change', function () {
+  handlePhotoFile(this.files && this.files[0]);
+});
+document.getElementById('fileCamera').addEventListener('change', function () {
+  handlePhotoFile(this.files && this.files[0]);
+});
+
+/* 点击遮罩空白处关闭照片来源弹层 */
+document.getElementById('photoSheet').addEventListener('click', function (e) {
+  if (e.target === this) closeMask('photoSheet');
+});
+
 function removePhoto(kind) {
   if (kind === 'exercise') state.exercise.photo = false; else state.diet.photo = false;
   renderWizard(kind);
