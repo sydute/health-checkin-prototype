@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>健康打卡 · 可点击原型</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: #eef0f4;
+    color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    padding: 32px;
+    min-height: 100vh;
+  }
+
+  /* ========== 手机外框 ========== */
+  .phone {
+    width: 390px;
+    height: 800px;
+    background: #f5f6f8;
+    border-radius: 40px;
+    box-shadow: 0 24px 64px rgba(20, 24, 40, 0.22), 0 0 0 10px #20232a, 0 0 0 12px #3a3e47;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  /* 状态栏 */
+  .statusbar {
+    height: 44px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .statusbar .icons { display: flex; align-items: center; gap: 6px; }
+  .signal { display: flex; align-items: flex-end; gap: 2px; }
+  .signal i { width: 3px; background: #1a1a1a; border-radius: 1px; display: block; }
+  .signal i:nth-child(1) { height: 4px; } .signal i:nth-child(2) { height: 6px; }
+  .signal i:nth-child(3) { height: 8px; } .signal i:nth-child(4) { height: 10px; }
+  .battery { width: 22px; height: 11px; border: 1.5px solid #1a1a1a; border-radius: 3px; position: relative; }
+  .battery::after { content: ''; position: absolute; left: 2px; top: 2px; bottom: 2px; width: 70%; background: #1a1a1a; border-radius: 1px; }
+
+  /* 导航栏 */
+  .navbar {
+    height: 48px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+    position: relative;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+  }
+  .nav-back {
+    position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+    width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+    font-size: 26px; color: #1a1a1a; cursor: pointer; border-radius: 50%;
+    visibility: hidden;
+  }
+  .nav-back.show { visibility: visible; }
+  .nav-back:hover { background: rgba(0,0,0,0.05); }
+
+  /* 屏幕容器 */
+  .screens { position: absolute; top: 92px; left: 0; right: 0; bottom: 0; }
+  .screen {
+    position: absolute; inset: 0;
+    padding: 20px;
+    overflow-y: auto;
+    opacity: 0;
+    transform: translateX(24px);
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .screen.active { opacity: 1; transform: translateX(0); pointer-events: auto; }
+
+  /* ========== 通用组件 ========== */
+  .card { background: #fff; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+  .btn {
+    width: 100%; height: 48px; border: none; border-radius: 24px;
+    font-size: 16px; font-weight: 600; color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-family: inherit;
+  }
+  .btn:active { opacity: 0.85; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn:disabled:active { opacity: 0.4; }
+  .btn-ghost { background: #fff; color: #5a5f66; border: 1px solid #e4e6ea; }
+  .btn-green { background: linear-gradient(135deg, #34c97b, #0ea968); }
+  .btn-orange { background: linear-gradient(135deg, #ffb347, #ff8c1a); }
+  .btn-blue { background: linear-gradient(135deg, #4f8cff, #2f6bf0); }
+
+  /* ========== 首页 ========== */
+  .home-header { text-align: center; margin: 32px 0 36px; }
+  .home-title { font-size: 26px; font-weight: 700; letter-spacing: 2px; }
+  .home-subtitle { margin-top: 8px; font-size: 13px; color: #8a8f99; }
+  .big-btn {
+    width: 100%; border: none; cursor: pointer; font-family: inherit;
+    display: flex; align-items: center; text-align: left;
+    padding: 26px 24px; border-radius: 20px; margin-bottom: 20px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.10); color: #fff;
+  }
+  .big-btn:active { opacity: 0.88; transform: scale(0.98); }
+  .big-btn.green { background: linear-gradient(135deg, #34c97b, #0ea968); }
+  .big-btn.orange { background: linear-gradient(135deg, #ffb347, #ff8c1a); }
+  .big-btn-icon {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: rgba(255,255,255,0.25); position: relative; flex-shrink: 0;
+  }
+  .icon-exercise::before { content:''; position:absolute; left:11px; top:20px; width:26px; height:8px; border-radius:4px; background:#fff; }
+  .icon-exercise::after { content:''; position:absolute; left:7px; top:15px; width:6px; height:18px; border-radius:3px; background:#fff; box-shadow:29px 0 0 #fff; }
+  .icon-diet::before { content:''; position:absolute; left:11px; top:11px; width:26px; height:26px; border-radius:50%; border:4px solid #fff; }
+  .big-btn-text { margin-left: 18px; }
+  .big-btn-title { font-size: 21px; font-weight: 700; letter-spacing: 1px; }
+  .big-btn-desc { margin-top: 5px; font-size: 12px; opacity: 0.85; }
+
+  /* 首页：查看本周周报入口 */
+  .weekly-entry {
+    display: flex; align-items: center; width: 100%; margin-top: 8px;
+    padding: 16px 20px; background: #fff; border: none; border-radius: 16px;
+    font-family: inherit; cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+  .weekly-entry:active { background: #f5f6f8; }
+  .weekly-entry-icon {
+    width: 36px; height: 36px; border-radius: 10px; background: #eaf1ff;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .weekly-entry-text { margin-left: 12px; font-size: 15px; font-weight: 600; color: #1a1a1a; }
+  .weekly-entry-arrow { margin-left: auto; font-size: 18px; color: #b3b7bd; }
+
+  /* ========== 向导流程 ========== */
+  .progress { margin-bottom: 20px; }
+  .progress-bar { height: 6px; border-radius: 3px; background: #e4e6ea; overflow: hidden; }
+  .progress-inner { height: 100%; border-radius: 3px; transition: width 0.25s ease; }
+  .progress-inner.green { background: linear-gradient(90deg, #34c97b, #0ea968); }
+  .progress-inner.orange { background: linear-gradient(90deg, #ffb347, #ff8c1a); }
+  .progress-text { display: block; margin-top: 8px; font-size: 12px; color: #8a8f99; }
+
+  .step-card { padding: 28px 20px; min-height: 300px; }
+  .step-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+  .step-tip { margin-top: 16px; font-size: 12px; color: #8a8f99; }
+
+  .picker-value {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; background: #f5f6f8; border-radius: 10px; cursor: pointer;
+  }
+  .picker-value:hover { background: #eceef2; }
+  .picker-value-text { font-size: 22px; font-weight: 700; }
+  .picker-arrow { font-size: 18px; color: #b3b7bd; }
+
+  .text-input {
+    width: 100%; padding: 14px 16px; background: #f5f6f8; border-radius: 10px;
+    border: 1px solid transparent; font-size: 16px; font-family: inherit; outline: none;
+  }
+  .text-input:focus { border-color: #c8ccd2; background: #fff; }
+
+  .duration-display { text-align: center; font-size: 24px; font-weight: 700; color: #0ea968; margin-bottom: 14px; }
+  .duration-display.invalid { color: #e25555; }
+  .warn-tip { margin-top: 12px; font-size: 12px; color: #e25555; }
+  .info-line { margin-top: 12px; font-size: 13px; color: #5a5f66; }
+  .info-strong { font-weight: 700; color: #0ea968; }
+  .info-strong-bad { font-weight: 700; color: #e25555; }
+  .picker-hint-box {
+    padding: 14px 16px; background: #f5f6f8; border-radius: 10px; cursor: pointer;
+    text-align: center; font-size: 14px; color: #5a5f66;
+  }
+  .picker-hint-box:hover { background: #eceef2; }
+
+  .photo-add {
+    height: 160px; border: 1px dashed #c8ccd2; border-radius: 10px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .photo-add:hover { border-color: #9aa0a8; background: #fafbfc; }
+  .photo-add-icon { font-size: 36px; color: #b3b7bd; line-height: 1; }
+  .photo-add-text { margin-top: 8px; font-size: 13px; color: #8a8f99; }
+  .photo-preview { position: relative; width: 160px; height: 160px; margin: 0 auto; }
+  .photo-preview svg { width: 100%; height: 100%; border-radius: 10px; display: block; }
+  .photo-remove {
+    position: absolute; top: -10px; right: -10px; width: 26px; height: 26px;
+    border-radius: 50%; background: rgba(0,0,0,0.6); color: #fff; font-size: 16px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+
+  .wizard-footer { display: flex; gap: 12px; margin-top: 20px; }
+
+  /* ========== 滚轮选择器 ========== */
+  .wheel-sheet { max-height: 62%; }
+  .wheel-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px; border-bottom: 1px solid #eceef2;
+  }
+  .wheel-head-title { font-size: 15px; font-weight: 600; }
+  .wheel-head-btn {
+    background: none; border: none; font-family: inherit;
+    font-size: 15px; color: #8a8f99; cursor: pointer; padding: 6px 8px;
+  }
+  .wheel-head-btn.primary { color: #2f6bf0; font-weight: 600; }
+  .wheel-body {
+    position: relative; height: 200px; display: flex;
+    justify-content: center; margin: 8px 0 12px;
+  }
+  .wheel-highlight {
+    position: absolute; left: 75px; right: 75px; top: 80px; height: 40px;
+    background: #f5f6f8; border-radius: 8px; pointer-events: none;
+  }
+  .wheel-col {
+    position: relative; width: 110px; height: 200px;
+    overflow-y: auto; scroll-snap-type: y mandatory;
+    padding: 80px 0; overscroll-behavior: contain;
+    scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .wheel-col::-webkit-scrollbar { display: none; }
+  .wheel-item {
+    height: 40px; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: #8a8f99; cursor: pointer;
+    scroll-snap-align: center; transition: color 0.15s;
+  }
+  .wheel-item.selected { color: #1a1a1a; font-weight: 700; }
+
+  /* ========== 周报页 ========== */
+  .weekly-header { text-align: center; margin: 12px 0 24px; }
+  .weekly-title { font-size: 22px; font-weight: 700; }
+  .weekly-range { margin-top: 6px; font-size: 12px; color: #8a8f99; }
+  .stat-card { padding: 22px 20px; margin-bottom: 16px; text-align: center; }
+  .stat-value { font-size: 26px; font-weight: 700; }
+  .stat-value.green { color: #0ea968; }
+  .stat-value.orange { color: #ff8c1a; }
+  .stat-unit { font-size: 14px; font-weight: 400; color: #8a8f99; margin-left: 4px; }
+  .stat-label { margin-top: 8px; font-size: 13px; color: #8a8f99; }
+  .summary-tip { margin: 24px 0 12px; text-align: center; font-size: 13px; color: #8a8f99; }
+
+  .empty-card { padding: 48px 24px; text-align: center; margin-top: 24px; }
+  .empty-title { font-size: 24px; font-weight: 700; }
+  .empty-desc { margin: 12px 0 24px; font-size: 13px; color: #8a8f99; line-height: 1.7; }
+
+  /* ========== 弹层（Toast / Modal / 底部选择器） ========== */
+  .toast {
+    position: absolute; left: 50%; bottom: 120px; transform: translateX(-50%);
+    background: rgba(0,0,0,0.7); color: #fff; font-size: 14px;
+    padding: 10px 20px; border-radius: 8px; opacity: 0; pointer-events: none;
+    transition: opacity 0.2s; z-index: 60; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+
+  .mask {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.45);
+    opacity: 0; pointer-events: none; transition: opacity 0.25s; z-index: 50;
+  }
+  .mask.show { opacity: 1; pointer-events: auto; }
+
+  .modal-card {
+    position: absolute; left: 40px; right: 40px; top: 50%;
+    transform: translateY(-50%) scale(0.95);
+    background: #fff; border-radius: 14px; overflow: hidden;
+    transition: transform 0.2s;
+  }
+  .mask.show .modal-card { transform: translateY(-50%) scale(1); }
+  .modal-title { text-align: center; font-size: 17px; font-weight: 700; padding: 24px 20px 0; }
+  .modal-body { text-align: center; font-size: 15px; color: #5a5f66; padding: 14px 24px 24px; line-height: 1.6; }
+  .modal-btn {
+    width: 100%; border: none; border-top: 1px solid #eceef2; background: #fff;
+    padding: 14px; font-size: 16px; font-weight: 600; color: #2f6bf0; cursor: pointer;
+    font-family: inherit;
+  }
+  .modal-btn:active { background: #f5f6f8; }
+
+  .sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; background: #fff;
+    border-radius: 16px 16px 0 0; transform: translateY(100%);
+    transition: transform 0.25s ease; max-height: 60%; display: flex; flex-direction: column;
+  }
+  .mask.show .sheet { transform: translateY(0); }
+
+  /* ========== 右侧原型说明面板 ========== */
+  .panel { width: 340px; flex-shrink: 0; }
+  .panel h1 { font-size: 20px; margin-bottom: 6px; }
+  .panel .sub { font-size: 13px; color: #6b7280; margin-bottom: 20px; }
+  .panel-card { background: #fff; border-radius: 14px; padding: 18px 20px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+  .panel-card h2 { font-size: 14px; margin-bottom: 12px; color: #1a1a1a; }
+  .page-link {
+    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+    background: none; border: none; cursor: pointer; font-family: inherit;
+    padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #1a1a1a;
+  }
+  .page-link:hover { background: #f0f4ff; }
+  .page-link .no {
+    width: 20px; height: 20px; border-radius: 50%; background: #2f6bf0; color: #fff;
+    font-size: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .page-link .step-of { color: #8a8f99; font-size: 12px; }
+  .demo-row { display: flex; align-items: flex-start; gap: 8px; font-size: 12.5px; color: #4b5563; line-height: 1.6; margin-bottom: 10px; }
+  .demo-row:last-child { margin-bottom: 0; }
+  .demo-row .dot { width: 6px; height: 6px; border-radius: 50%; background: #2f6bf0; margin-top: 7px; flex-shrink: 0; }
+  .switch-row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+  .switch { position: relative; width: 40px; height: 22px; cursor: pointer; }
+  .switch input { display: none; }
+  .switch .track { position: absolute; inset: 0; background: #d4d7dc; border-radius: 11px; transition: background 0.2s; }
+  .switch .track::after { content: ''; position: absolute; left: 2px; top: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+  .switch input:checked + .track { background: #2f6bf0; }
+  .switch input:checked + .track::after { left: 20px; }
+
+  @media (max-width: 860px) {
+    body { flex-direction: column; padding: 16px; gap: 24px; }
+    .panel { width: 100%; max-width: 390px; }
+    .phone { height: 720px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= 手机原型 ================= -->
+<div class="phone">
+  <div class="statusbar">
+    <span id="statusTime">9:41</span>
+    <span class="icons">
+      <span class="signal"><i></i><i></i><i></i><i></i></span>
+      <span class="battery"></span>
+    </span>
+  </div>
+  <div class="navbar">
+    <span class="nav-back" id="navBack">‹</span>
+    <span id="navTitle">健康打卡</span>
+  </div>
+
+  <div class="screens">
+
+    <!-- 页面 1：首页 -->
+    <section class="screen active" id="screen-home">
+      <div class="home-header">
+        <div class="home-title">健康打卡</div>
+        <div class="home-subtitle">记录每一次锻炼与饮食</div>
+      </div>
+      <button class="big-btn green" onclick="openWizard('exercise')">
+        <span class="big-btn-icon icon-exercise"></span>
+        <span class="big-btn-text">
+          <span class="big-btn-title">记录锻炼</span>
+          <span class="big-btn-desc" style="display:block">时间 · 名称 · 时长 · 照片</span>
+        </span>
+      </button>
+      <button class="big-btn orange" onclick="openWizard('diet')">
+        <span class="big-btn-icon icon-diet"></span>
+        <span class="big-btn-text">
+          <span class="big-btn-title">记录饮食</span>
+          <span class="big-btn-desc" style="display:block">时间 · 内容 · 摄入量 · 照片</span>
+        </span>
+      </button>
+
+      <button class="weekly-entry" onclick="openWeekly()">
+        <span class="weekly-entry-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1" y="9" width="3.5" height="7" rx="1" fill="#2f6bf0"/>
+            <rect x="7" y="4" width="3.5" height="12" rx="1" fill="#2f6bf0"/>
+            <rect x="13" y="7" width="3.5" height="9" rx="1" fill="#2f6bf0"/>
+          </svg>
+        </span>
+        <span class="weekly-entry-text">查看本周周报</span>
+        <span class="weekly-entry-arrow">›</span>
+      </button>
+    </section>
+
+    <!-- 页面 2：记录锻炼（四步向导） -->
+    <section class="screen" id="screen-exercise">
+      <div class="progress">
+        <div class="progress-bar"><div class="progress-inner green" id="exProgress" style="width:25%"></div></div>
+        <span class="progress-text" id="exProgressText">第 1/4 步 · 打卡时间</span>
+      </div>
+      <div class="card step-card" id="exStepBody"></div>
+      <div class="wizard-footer" id="exFooter"></div>
+    </section>
+
+    <!-- 页面 3：记录饮食（四步向导） -->
+    <section class="screen" id="screen-diet">
+      <div class="progress">
+        <div class="progress-bar"><div class="progress-inner orange" id="dtProgress" style="width:25%"></div></div>
+        <span class="progress-text" id="dtProgressText">第 1/4 步 · 打卡时间</span>
+      </div>
+      <div class="card step-card" id="dtStepBody"></div>
+      <div class="wizard-footer" id="dtFooter"></div>
+    </section>
+
+    <!-- 页面 4：周报反馈 -->
+    <section class="screen" id="screen-weekly">
+      <div class="weekly-header">
+        <div class="weekly-title">本周周报</div>
+        <div class="weekly-range" id="weekRange"></div>
+      </div>
+      <div id="weeklyStats">
+        <div class="card stat-card">
+          <div class="stat-value">5<span class="stat-unit">天</span></div>
+          <div class="stat-label">本周已坚持</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-value green">3小时25分钟</div>
+          <div class="stat-label">累计锻炼总时长（共 6 次）</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-value orange">9<span class="stat-unit">次</span></div>
+          <div class="stat-label">累计饮食记录</div>
+        </div>
+        <div class="summary-tip">继续保持，每一天都算数。</div>
+        <button class="btn btn-blue" onclick="goHome()">继续记录</button>
+      </div>
+      <div id="weeklyEmpty" style="display:none">
+        <div class="card empty-card">
+          <div class="empty-title">今天开始</div>
+          <div class="empty-desc">还没有任何记录，从今天开始，<br>完成你的第一次锻炼或饮食打卡吧。</div>
+          <button class="btn btn-blue" onclick="goHome()">去记录</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- 通用提示弹窗（无效打卡 / 结束时间超限 / 单日累计超限） -->
+  <div class="mask" id="alertModal">
+    <div class="modal-card">
+      <div class="modal-title" id="alertTitle">无效打卡</div>
+      <div class="modal-body" id="alertBody">22:00 后打卡无效，<br>请次日 6:00 后再进行打卡</div>
+      <button class="modal-btn" onclick="closeMask('alertModal')">我知道了</button>
+    </div>
+  </div>
+
+  <!-- 滚轮选择器（打卡时间 / 运动时长通用） -->
+  <div class="mask" id="wheelSheet">
+    <div class="sheet wheel-sheet">
+      <div class="wheel-head">
+        <button class="wheel-head-btn" onclick="closeMask('wheelSheet')">取消</button>
+        <span class="wheel-head-title" id="wheelTitle">选择打卡时间</span>
+        <button class="wheel-head-btn primary" onclick="confirmWheel()">确定</button>
+      </div>
+      <div class="wheel-body">
+        <div class="wheel-highlight"></div>
+        <div class="wheel-col" id="wheelColH"></div>
+        <div class="wheel-col" id="wheelColM"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<!-- ================= 原型说明面板 ================= -->
+<div class="panel">
+  <h1>健康打卡 · 可点击原型</h1>
+  <div class="sub">纯前端静态演示 · 假数据 · 共 4 个页面，页面间可真实跳转</div>
+
+  <div class="panel-card">
+    <h2>页面清单（点击跳转）</h2>
+    <button class="page-link" onclick="jumpTo('home')"><span class="no">1</span>首页 <span class="step-of">— 最短路径起点：两个核心入口</span></button>
+    <button class="page-link" onclick="jumpTo('exercise')"><span class="no">2</span>记录锻炼 <span class="step-of">— 时间→名称→时长→照片→提交</span></button>
+    <button class="page-link" onclick="jumpTo('diet')"><span class="no">3</span>记录饮食 <span class="step-of">— 时间→内容→摄入量→照片→提交</span></button>
+    <button class="page-link" onclick="jumpTo('weekly')"><span class="no">4</span>周报反馈 <span class="step-of">— 提交后落地页：本周统计</span></button>
+  </div>
+
+  <div class="panel-card">
+    <h2>可演示的关键状态</h2>
+    <div class="demo-row"><span class="dot"></span>打卡时间滚轮<b>小时仅 6-21</b>，范围外的数值不出现在列表里；时长仍为 0-24 小时 / 0-59 分</div>
+    <div class="demo-row"><span class="dot"></span><b>结束时间超 22:00</b>：21:00 打卡 + 1小时30分 → 预计结束 22:30，点「下一步」即拦截并提示调整</div>
+    <div class="demo-row"><span class="dot"></span><b>单日累计超 24 小时</b>：打开下方开关模拟今日已练 23小时30分钟，再选超过 30 分钟即被拦截</div>
+    <div class="demo-row"><span class="dot"></span>运动时长保持 <b>0小时0分钟</b>、「下一步」为禁用态，无法进入下一环节</div>
+    <div class="demo-row"><span class="dot"></span>饮食摄入量填 <b>0</b> 时，「下一步」同样禁用并提示需大于 0</div>
+    <div class="demo-row"><span class="dot"></span>第 2 步不输入名称/内容直接点「下一步」，触发必填校验提示</div>
+    <div class="demo-row"><span class="dot"></span>照片步骤可点击添加 / 移除模拟照片，也可跳过直接提交</div>
+    <div class="switch-row" style="margin-top:12px">
+      <span>模拟今日已练 23小时30分钟</span>
+      <label class="switch"><input type="checkbox" id="mockToggle" onchange="toggleMockHistory(this.checked)"><span class="track"></span></label>
+    </div>
+    <div class="switch-row" style="margin-top:12px">
+      <span>周报「今天开始」空状态预览</span>
+      <label class="switch"><input type="checkbox" id="emptyToggle" onchange="toggleWeeklyEmpty(this.checked)"><span class="track"></span></label>
+    </div>
+  </div>
+
+  <div class="panel-card">
+    <h2>三层校验</h2>
+    <div class="demo-row"><span class="dot"></span><b>第一层 · 输入拦截</b>：滚轮小时锁 6-21、时长步骤实时显示预计结束时间与今日累计，越界红字提示</div>
+    <div class="demo-row"><span class="dot"></span><b>第二层 · 提交前校验</b>：点「下一步」即时校验打卡时间；点「确认提交」全量校验结束时间与单日累计</div>
+    <div class="demo-row"><span class="dot"></span><b>第三层 · 服务端复核</b>：原型内以 <code>apiCreateExercise</code> 模拟接口独立复算，通过后才落库跳转（真实项目对应云函数）</div>
+  </div>
+
+  <div class="panel-card">
+    <h2>最短路径</h2>
+    <div class="demo-row"><span class="dot"></span>首页 → 记录锻炼（4 步）→ 确认提交 → 周报反馈</div>
+    <div class="demo-row"><span class="dot"></span>首页 → 记录饮食（4 步）→ 确认提交 → 周报反馈</div>
+    <div class="demo-row"><span class="dot"></span>首页 → 查看本周周报（快捷入口，直达统计页）</div>
+  </div>
+</div>
+
+<script>
+/* ================= 常量与工具 ================= */
+var EXERCISE_STEPS = ['打卡时间', '运动名称', '运动时长', '上传照片'];
+var DIET_STEPS = ['打卡时间', '饮食内容', '摄入量', '上传照片'];
+
+var ITEM_H = 40;          // 滚轮单项高度
+var MAX_HOUR = 24;        // 运动时长小时上限：0-24 的整数
+var MAX_MINUTE = 59;      // 分钟选项：0-59 的整数
+var MIN_START_HOUR = 6;   // 打卡时间小时下限
+var MAX_START_HOUR = 21;  // 打卡时间小时上限
+var DAY_END_MINUTES = 22 * 60;            // 结束时间上限：当日 22:00
+var DAY_MAX_EXERCISE_MINUTES = 24 * 60;   // 单日累计运动上限：24 小时
+
+function padZero(n) { return n < 10 ? '0' + n : '' + n; }
+function nowHour() { return new Date().getHours(); }
+function nowMinute() { return new Date().getMinutes(); }
+
+/* 默认打卡小时收敛到 6-21，保证默认值本身合法 */
+function defaultTimeH() {
+  var h = nowHour();
+  if (h < MIN_START_HOUR) return MIN_START_HOUR;
+  if (h > MAX_START_HOUR) return MAX_START_HOUR;
+  return h;
+}
+
+function timeText(d) { return padZero(d.timeH) + ':' + padZero(d.timeM); }
+function durationText(d) { return d.durH + '小时' + d.durM + '分钟'; }
+function minutesText(m) { return Math.floor(m / 60) + '小时' + (m % 60) + '分钟'; }
+function startMinutes(d) { return d.timeH * 60 + d.timeM; }
+function durationMinutes(d) { return d.durH * 60 + d.durM; }
+
+/* 结束时间 = 打卡时间 + 本次时长；跨天时给「次日」前缀 */
+function endTimeInfo(d) {
+  var total = startMinutes(d) + durationMinutes(d);
+  var day = Math.floor(total / 1440);
+  var rest = total % 1440;
+  return {
+    minutes: total,
+    day: day,
+    text: (day > 0 ? '次日 ' : '') + padZero(Math.floor(rest / 60)) + ':' + padZero(rest % 60)
+  };
+}
+
+/* 模拟数据层（对应真实项目里的云数据库） */
+var mockDB = {
+  historyMinutes: 0,   // 右侧开关模拟的「今日已练」
+  sessionMinutes: 0    // 本次会话已成功提交的累计
+};
+var MOCK_HISTORY_MINUTES = 23 * 60 + 30;
+
+function todayTotalMinutes() {
+  return mockDB.historyMinutes + mockDB.sessionMinutes;
+}
+
+/* ================= 全局状态 ================= */
+var state = {
+  stack: ['home'],
+  exercise: { step: 0, timeH: defaultTimeH(), timeM: nowMinute(), name: '', durH: 0, durM: 0, photo: false },
+  diet: { step: 0, timeH: defaultTimeH(), timeM: nowMinute(), content: '', amount: '', photo: false }
+};
+var submitting = false;
+
+var TITLES = { home: '健康打卡', exercise: '记录锻炼', diet: '记录饮食', weekly: '本周周报' };
+
+/* ================= 导航 ================= */
+function navigate(id) {
+  document.querySelectorAll('.screen').forEach(function (s) { s.classList.remove('active'); });
+  document.getElementById('screen-' + id).classList.add('active');
+  state.stack.push(id);
+  document.getElementById('navTitle').textContent = TITLES[id];
+  document.getElementById('navBack').classList.toggle('show', state.stack.length > 1);
+}
+function goBack() {
+  if (state.stack.length <= 1) return;
+  state.stack.pop();
+  var id = state.stack[state.stack.length - 1];
+  document.querySelectorAll('.screen').forEach(function (s) { s.classList.remove('active'); });
+  document.getElementById('screen-' + id).classList.add('active');
+  document.getElementById('navTitle').textContent = TITLES[id];
+  document.getElementById('navBack').classList.toggle('show', state.stack.length > 1);
+}
+function goHome() {
+  state.stack = ['home'];
+  navigateHomeOnly();
+}
+function navigateHomeOnly() {
+  document.querySelectorAll('.screen').forEach(function (s) { s.classList.remove('active'); });
+  document.getElementById('screen-home').classList.add('active');
+  document.getElementById('navTitle').textContent = TITLES.home;
+  document.getElementById('navBack').classList.remove('show');
+}
+function jumpTo(id) {
+  if (id === 'exercise') { openWizard('exercise'); return; }
+  if (id === 'diet') { openWizard('diet'); return; }
+  if (id === 'weekly') { openWeekly(); return; }
+  goHome();
+}
+document.getElementById('navBack').addEventListener('click', goBack);
+
+/* ================= 向导渲染 ================= */
+function openWizard(kind) {
+  if (kind === 'exercise') {
+    state.exercise = { step: 0, timeH: defaultTimeH(), timeM: nowMinute(), name: '', durH: 0, durM: 0, photo: false };
+  } else {
+    state.diet = { step: 0, timeH: defaultTimeH(), timeM: nowMinute(), content: '', amount: '', photo: false };
+  }
+  renderWizard(kind);
+  navigate(kind);
+}
+
+function renderWizard(kind) {
+  var isEx = kind === 'exercise';
+  var d = isEx ? state.exercise : state.diet;
+  var titles = isEx ? EXERCISE_STEPS : DIET_STEPS;
+  var prefix = isEx ? 'ex' : 'dt';
+
+  document.getElementById(prefix + 'Progress').style.width = ((d.step + 1) * 25) + '%';
+  document.getElementById(prefix + 'ProgressText').textContent = '第 ' + (d.step + 1) + '/4 步 · ' + titles[d.step];
+
+  var body = document.getElementById(prefix + 'StepBody');
+  var html = '';
+
+  if (d.step === 0) {
+    var hourOk = (d.timeH >= MIN_START_HOUR && d.timeH <= MAX_START_HOUR);
+    html = '<div class="step-title">选择打卡时间</div>'
+      + '<div class="picker-value" onclick="openWheel(\'' + kind + '\', \'time\')">'
+      + '<span class="picker-value-text">' + timeText(d) + '</span><span class="picker-arrow">›</span></div>'
+      + '<div class="step-tip">小时仅可选 ' + MIN_START_HOUR + ' - ' + MAX_START_HOUR + '，分钟 0 - 59；默认为当前时间（本地时区）</div>'
+      + (hourOk ? '' : '<div class="warn-tip">打卡时间仅支持 06:00 - 21:59</div>');
+  } else if (d.step === 1) {
+    if (isEx) {
+      html = '<div class="step-title">输入运动名称</div>'
+        + '<input class="text-input" id="exNameInput" placeholder="如：慢跑、游泳、瑜伽" maxlength="30" value="' + escapeHtml(d.name) + '">';
+    } else {
+      html = '<div class="step-title">输入饮食内容</div>'
+        + '<input class="text-input" id="dtContentInput" placeholder="如：鸡胸肉沙拉、牛肉面" maxlength="50" value="' + escapeHtml(d.content) + '">';
+    }
+  } else if (d.step === 2) {
+    if (isEx) {
+      var zero = (d.durH === 0 && d.durM === 0);
+      var end = endTimeInfo(d);
+      var endOver = !zero && (end.day > 0 || end.minutes > DAY_END_MINUTES);
+      html = '<div class="step-title">选择运动时长</div>'
+        + '<div class="duration-display' + (zero ? ' invalid' : '') + '">' + durationText(d) + '</div>'
+        + '<div class="picker-hint-box" onclick="openWheel(\'exercise\', \'duration\')">点击滚轮选择时长（小时 0-24 · 分钟 0-59）</div>'
+        + '<div class="info-line">打卡时间 ' + timeText(d) + ' · 预计结束 '
+        + '<span class="' + (endOver ? 'info-strong-bad' : 'info-strong') + '">' + end.text + '</span></div>'
+        + '<div class="info-line">今日已累计锻炼 ' + minutesText(todayTotalMinutes()) + '（单日上限 24 小时）</div>'
+        + (zero ? '<div class="warn-tip">运动时长需大于 0小时0分钟</div>' : '')
+        + (endOver ? '<div class="warn-tip">结束时间超过当日 22:00，请调整打卡时间或缩短时长</div>' : '');
+    } else {
+      html = '<div class="step-title">填写摄入量</div>'
+        + '<input class="text-input" id="dtAmountInput" placeholder="如：一碗、300克、一杯" maxlength="20" value="' + escapeHtml(d.amount) + '">'
+        + '<div class="warn-tip" id="dtZeroTip" style="display:' + (isZeroAmount(d.amount) ? 'block' : 'none') + '">摄入量需大于 0</div>';
+    }
+  } else {
+    var photoArea;
+    if (!d.photo) {
+      photoArea = '<div class="photo-add" onclick="addPhoto(\'' + kind + '\')">'
+        + '<span class="photo-add-icon">+</span><span class="photo-add-text">拍照 / 从相册选择</span></div>';
+    } else {
+      photoArea = '<div class="photo-preview">' + fakePhotoSvg(kind)
+        + '<span class="photo-remove" onclick="removePhoto(\'' + kind + '\')">×</span></div>';
+    }
+    html = '<div class="step-title">' + (isEx ? '上传本人照片（选填）' : '上传食物照片（选填）') + '</div>'
+      + photoArea
+      + '<div class="step-tip">' + (isEx ? '记录此刻的自己，也可直接提交' : '记录这餐的样子，也可直接提交') + '</div>';
+  }
+  body.innerHTML = html;
+
+  var footer = document.getElementById(prefix + 'Footer');
+  var color = isEx ? 'btn-green' : 'btn-orange';
+  var disabled = isNextDisabled(kind, d);
+  var fhtml = '';
+  if (d.step > 0) fhtml += '<button class="btn btn-ghost" style="flex:1" onclick="prevStep(\'' + kind + '\')">上一步</button>';
+  if (d.step < 3) {
+    fhtml += '<button class="btn ' + color + '" style="flex:1" id="' + prefix + 'NextBtn"'
+      + (disabled ? ' disabled' : '') + ' onclick="nextStep(\'' + kind + '\')">下一步</button>';
+  } else {
+    fhtml += '<button class="btn ' + color + '" style="flex:1" onclick="submit(\'' + kind + '\')">确认提交</button>';
+  }
+  footer.innerHTML = fhtml;
+
+  var input = body.querySelector('.text-input');
+  if (input) input.focus();
+
+  /* 摄入量输入时实时刷新「下一步」禁用态与提示 */
+  if (kind === 'diet' && d.step === 2 && input) {
+    input.addEventListener('input', function () {
+      state.diet.amount = input.value;
+      var btn = document.getElementById('dtNextBtn');
+      if (btn) btn.disabled = isZeroAmount(input.value);
+      var tip = document.getElementById('dtZeroTip');
+      if (tip) tip.style.display = isZeroAmount(input.value) ? 'block' : 'none';
+    });
+  }
+}
+
+/* 下一步是否禁用：运动时长 0小时0分钟 / 摄入量为 0 */
+function isNextDisabled(kind, d) {
+  if (kind === 'exercise' && d.step === 2) return d.durH === 0 && d.durM === 0;
+  if (kind === 'diet' && d.step === 2) return isZeroAmount(d.amount);
+  return false;
+}
+
+/* 摄入量是否为 0（支持「0」「0克」「0.0」等写法） */
+function isZeroAmount(v) {
+  var s = (v || '').trim();
+  if (!s) return false;
+  var m = s.match(/\d+(?:\.\d+)?/);
+  if (!m) return false;
+  return parseFloat(m[0]) === 0;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/* 模拟照片：内联 SVG，无外部资源 */
+function fakePhotoSvg(kind) {
+  if (kind === 'exercise') {
+    return '<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">'
+      + '<defs><linearGradient id="exg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9be7c4"/><stop offset="1" stop-color="#34c97b"/></linearGradient></defs>'
+      + '<rect width="160" height="160" fill="url(#exg)"/>'
+      + '<circle cx="128" cy="30" r="14" fill="#ffffff" opacity="0.85"/>'
+      + '<rect x="0" y="118" width="160" height="42" fill="#0ea968" opacity="0.55"/>'
+      + '<circle cx="72" cy="52" r="10" fill="#1a1a1a"/>'
+      + '<path d="M72 64 L66 96 M66 96 L48 118 M66 96 L86 116 M70 76 L48 84 M70 76 L94 70" stroke="#1a1a1a" stroke-width="7" stroke-linecap="round" fill="none"/>'
+      + '</svg>';
+  }
+  return '<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">'
+    + '<defs><linearGradient id="dtg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd9a0"/><stop offset="1" stop-color="#ffab4a"/></linearGradient></defs>'
+    + '<rect width="160" height="160" fill="url(#dtg)"/>'
+    + '<circle cx="80" cy="86" r="48" fill="#ffffff"/>'
+    + '<circle cx="80" cy="86" r="36" fill="#f0f1f4"/>'
+    + '<circle cx="68" cy="78" r="11" fill="#34c97b"/>'
+    + '<circle cx="92" cy="82" r="9" fill="#ff8c1a"/>'
+    + '<circle cx="78" cy="98" r="8" fill="#e25555"/>'
+    + '<rect x="20" y="46" width="4" height="80" rx="2" fill="#8a8f99"/>'
+    + '<rect x="136" y="46" width="4" height="80" rx="2" fill="#8a8f99"/>'
+    + '</svg>';
+}
+
+/* ================= 步骤流转 ================= */
+function readCurrentInput(kind) {
+  if (kind === 'exercise' && state.exercise.step === 1) {
+    var el = document.getElementById('exNameInput');
+    if (el) state.exercise.name = el.value;
+  }
+  if (kind === 'diet') {
+    if (state.diet.step === 1) {
+      var c = document.getElementById('dtContentInput');
+      if (c) state.diet.content = c.value;
+    }
+    if (state.diet.step === 2) {
+      var a = document.getElementById('dtAmountInput');
+      if (a) state.diet.amount = a.value;
+    }
+  }
+}
+
+function nextStep(kind) {
+  readCurrentInput(kind);
+  var d = kind === 'exercise' ? state.exercise : state.diet;
+
+  /* 第 1 步即时校验打卡时间（小时 6-21，且不得晚于 22:00） */
+  if (d.step === 0) {
+    var timeErr = checkStartTime(d);
+    if (timeErr) { showAlert(timeErr.title, timeErr.body); return; }
+  }
+
+  if (kind === 'exercise' && d.step === 1 && !d.name.trim()) { showToast('请输入运动名称'); return; }
+  if (kind === 'diet' && d.step === 1 && !d.content.trim()) { showToast('请输入饮食内容'); return; }
+  if (kind === 'diet' && d.step === 2 && !d.amount.trim()) { showToast('请填写摄入量'); return; }
+
+  /* 运动时长步骤：即时校验结束时间与单日累计 */
+  if (kind === 'exercise' && d.step === 2) {
+    if (isNextDisabled(kind, d)) return;
+    var durErr = checkDurationRules(d);
+    if (durErr) { showAlert(durErr.title, durErr.body); return; }
+  }
+
+  /* 兜底：时长为 0 或摄入量为 0 时不放行 */
+  if (isNextDisabled(kind, d)) return;
+
+  if (d.step < 3) { d.step += 1; renderWizard(kind); }
+}
+
+function prevStep(kind) {
+  readCurrentInput(kind);
+  var d = kind === 'exercise' ? state.exercise : state.diet;
+  if (d.step > 0) { d.step -= 1; renderWizard(kind); }
+}
+
+/* ================= 校验规则（三层） ================= */
+/* 打卡时间有效性：06:00 - 22:00（22:00 整有效，22:01 起无效） */
+function isValidCheckinTime(h, m) {
+  if (h < 6) return false;
+  if (h > 22) return false;
+  if (h === 22 && m > 0) return false;
+  return true;
+}
+
+/* 第一层：时间段输入约束（小时仅 6-21）+ 实时范围提示 */
+function checkStartTime(d) {
+  if (d.timeH < MIN_START_HOUR || d.timeH > MAX_START_HOUR) {
+    return {
+      title: '打卡时间无效',
+      body: '打卡时间的小时仅支持 <b>' + MIN_START_HOUR + ' - ' + MAX_START_HOUR + '</b>，<br>请重新选择打卡时间。'
+    };
+  }
+  if (!isValidCheckinTime(d.timeH, d.timeM)) {
+    return { title: '无效打卡', body: '22:00 后打卡无效，<br>请次日 6:00 后再进行打卡' };
+  }
+  return null;
+}
+
+/* 规则 2：结束时间不得超过当日 22:00；规则 1：单日累计不得超过 24 小时 */
+function checkDurationRules(d) {
+  var dur = durationMinutes(d);
+  if (dur <= 0) {
+    return { title: '时长不能为 0', body: '请先通过滚轮选择大于 0小时0分钟 的运动时长。' };
+  }
+  var end = endTimeInfo(d);
+  if (end.day > 0 || end.minutes > DAY_END_MINUTES) {
+    return {
+      title: '结束时间超出限制',
+      body: '打卡时间 ' + timeText(d) + ' + 本次时长 ' + durationText(d) + '<br>'
+        + '预计结束 <b>' + end.text + '</b>，已超过当日 22:00。<br>'
+        + '请调整打卡时间，或缩短运动时长。'
+    };
+  }
+  var total = todayTotalMinutes() + dur;
+  if (total > DAY_MAX_EXERCISE_MINUTES) {
+    return {
+      title: '超出单日运动上限',
+      body: '今日已累计 <b>' + minutesText(todayTotalMinutes()) + '</b>，'
+        + '本次 ' + minutesText(dur) + ' 后合计 <b>' + minutesText(total) + '</b>，<br>'
+        + '超过单日 24 小时上限，请缩短本次运动时长。'
+    };
+  }
+  return null;
+}
+
+/* 第三层：模拟服务端接口二次校验（真实项目中对应云函数 / 后端接口） */
+function apiCreateExercise(payload) {
+  return new Promise(function (resolve) {
+    setTimeout(function () {
+      var dur = payload.durationMinutes;
+      if (dur <= 0) {
+        return resolve({ ok: false, title: '时长不能为 0', body: '服务端校验：运动时长必须大于 0。' });
+      }
+      if (payload.timeH < MIN_START_HOUR || payload.timeH > MAX_START_HOUR) {
+        return resolve({ ok: false, title: '打卡时间无效', body: '服务端校验：打卡时间仅支持 06:00 - 21:59。' });
+      }
+      if (payload.timeH * 60 + payload.timeM + dur > DAY_END_MINUTES) {
+        return resolve({ ok: false, title: '结束时间超出限制', body: '服务端校验：结束时间超过当日 22:00，请调整打卡时间或缩短时长。' });
+      }
+      if (mockDB.historyMinutes + mockDB.sessionMinutes + dur > DAY_MAX_EXERCISE_MINUTES) {
+        return resolve({ ok: false, title: '超出单日运动上限', body: '服务端校验：单日累计运动时长不得超过 24 小时。' });
+      }
+      mockDB.sessionMinutes += dur;
+      resolve({ ok: true });
+    }, 400);
+  });
+}
+
+function submit(kind) {
+  if (submitting) return;
+  var d = kind === 'exercise' ? state.exercise : state.diet;
+
+  /* 第二层：提交前全量校验 */
+  var timeErr = checkStartTime(d);
+  if (timeErr) { showAlert(timeErr.title, timeErr.body); return; }
+
+  if (kind === 'exercise') {
+    var durErr = checkDurationRules(d);
+    if (durErr) { showAlert(durErr.title, durErr.body); return; }
+
+    submitting = true;
+    showToast('正在校验...');
+
+    /* 第三层通过后才算提交成功 */
+    apiCreateExercise({
+      timeH: d.timeH,
+      timeM: d.timeM,
+      durH: d.durH,
+      durM: d.durM,
+      durationMinutes: durationMinutes(d),
+      name: d.name
+    }).then(function (res) {
+      submitting = false;
+      if (!res.ok) { showAlert(res.title, res.body); return; }
+      showToast('提交成功');
+      setTimeout(openWeekly, 900);
+    });
+    return;
+  }
+
+  showToast('提交成功');
+  setTimeout(openWeekly, 900);
+}
+
+function openWeekly() {
+  /* 提交成功后 redirectTo 周报：回退栈重置为 首页 → 周报 */
+  navigate('weekly');
+  state.stack = ['home', 'weekly'];
+}
+
+/* ================= 周报 ================= */
+function renderWeekRange() {
+  var now = new Date();
+  var day = now.getDay();
+  var diff = (day + 6) % 7;
+  var monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff);
+  var sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6);
+  document.getElementById('weekRange').textContent =
+    (monday.getMonth() + 1) + '月' + monday.getDate() + '日 - ' + (sunday.getMonth() + 1) + '月' + sunday.getDate() + '日';
+}
+
+function toggleWeeklyEmpty(empty) {
+  document.getElementById('weeklyStats').style.display = empty ? 'none' : '';
+  document.getElementById('weeklyEmpty').style.display = empty ? '' : 'none';
+  if (state.stack[state.stack.length - 1] !== 'weekly') openWeekly();
+}
+
+/* ================= 滚轮选择器（打卡时间 / 运动时长） ================= */
+var wheelCtx = null;
+
+function openWheel(kind, mode) {
+  var d = kind === 'exercise' ? state.exercise : state.diet;
+  var isTime = mode === 'time';
+  var hMin = isTime ? MIN_START_HOUR : 0;
+  var hMax = isTime ? MAX_START_HOUR : MAX_HOUR;
+  var h = isTime ? d.timeH : d.durH;
+  var m = isTime ? d.timeM : d.durM;
+
+  /* 小时越界时收敛到合法区间 */
+  if (h < hMin) h = hMin;
+  if (h > hMax) h = hMax;
+
+  wheelCtx = { kind: kind, mode: mode, h: h, m: m, hMin: hMin, hMax: hMax };
+
+  document.getElementById('wheelTitle').textContent = isTime
+    ? '选择打卡时间（' + hMin + ':00 - ' + hMax + ':59）'
+    : '选择运动时长';
+
+  var colH = document.getElementById('wheelColH');
+  var colM = document.getElementById('wheelColM');
+  buildWheelCol(colH, hMin, hMax, h, isTime ? '时' : '小时', isTime);
+  buildWheelCol(colM, 0, MAX_MINUTE, m, isTime ? '分' : '分钟', false);
+
+  bindWheel(colH, hMin, hMax, function (v) { wheelCtx.h = v; });
+  bindWheel(colM, 0, MAX_MINUTE, function (v) { wheelCtx.m = v; });
+
+  document.getElementById('wheelSheet').classList.add('show');
+
+  /* 弹层渲染完成后定位到当前值 */
+  requestAnimationFrame(function () {
+    colH.scrollTop = (h - hMin) * ITEM_H;
+    colM.scrollTop = m * ITEM_H;
+  });
+}
+
+/* 滚轮列：值区间 [min, max]，越界值不会出现在列表里 */
+function buildWheelCol(col, min, max, selected, unit, pad) {
+  var html = '';
+  for (var v = min; v <= max; v++) {
+    var label = pad ? padZero(v) : v;
+    html += '<div class="wheel-item' + (v === selected ? ' selected' : '')
+      + '" data-v="' + v + '">' + label + ' ' + unit + '</div>';
+  }
+  col.innerHTML = html;
+}
+
+function bindWheel(col, min, max, onChange) {
+  var timer = null;
+  col.onscroll = function () {
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      var idx = Math.round(col.scrollTop / ITEM_H);
+      if (idx < 0) idx = 0;
+      if (idx > max - min) idx = max - min;
+      markWheelSelected(col, idx);
+      onChange(min + idx);
+    }, 60);
+  };
+  col.onclick = function (e) {
+    var item = e.target.closest ? e.target.closest('.wheel-item') : null;
+    if (!item) return;
+    var v = Number(item.getAttribute('data-v'));
+    markWheelSelected(col, v - min);
+    col.scrollTop = (v - min) * ITEM_H;
+    onChange(v);
+  };
+}
+
+function markWheelSelected(col, idx) {
+  var items = col.children;
+  for (var i = 0; i < items.length; i++) {
+    items[i].classList.toggle('selected', i === idx);
+  }
+}
+
+function confirmWheel() {
+  if (!wheelCtx) return;
+  var kind = wheelCtx.kind;
+  var d = kind === 'exercise' ? state.exercise : state.diet;
+  if (wheelCtx.mode === 'time') {
+    d.timeH = wheelCtx.h;
+    d.timeM = wheelCtx.m;
+  } else {
+    d.durH = wheelCtx.h;
+    d.durM = wheelCtx.m;
+  }
+  closeMask('wheelSheet');
+  renderWizard(kind);
+}
+
+function closeMask(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+/* 通用提示弹窗 */
+function showAlert(title, body) {
+  document.getElementById('alertTitle').textContent = title;
+  document.getElementById('alertBody').innerHTML = body;
+  document.getElementById('alertModal').classList.add('show');
+}
+
+/* 面板开关：模拟「今日已练 23小时30分钟」，用于演示单日 24 小时上限 */
+function toggleMockHistory(on) {
+  mockDB.historyMinutes = on ? MOCK_HISTORY_MINUTES : 0;
+  if (state.stack[state.stack.length - 1] === 'exercise') renderWizard('exercise');
+}
+
+/* 点击遮罩空白处关闭底部弹层 */
+document.getElementById('wheelSheet').addEventListener('click', function (e) {
+  if (e.target === this) closeMask('wheelSheet');
+});
+
+/* ================= 照片模拟 ================= */
+function addPhoto(kind) {
+  if (kind === 'exercise') state.exercise.photo = true; else state.diet.photo = true;
+  renderWizard(kind);
+  showToast('已添加照片（模拟）');
+}
+function removePhoto(kind) {
+  if (kind === 'exercise') state.exercise.photo = false; else state.diet.photo = false;
+  renderWizard(kind);
+}
+
+/* ================= Toast ================= */
+var toastTimer = null;
+function showToast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { el.classList.remove('show'); }, 1600);
+}
+
+/* ================= 初始化 ================= */
+document.getElementById('statusTime').textContent = padZero(nowHour()) + ':' + padZero(nowMinute());
+renderWeekRange();
+</script>
+</body>
+</html>
