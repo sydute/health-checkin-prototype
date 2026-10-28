@@ -283,20 +283,6 @@
   }
   .mask.show .sheet { transform: translateY(0); }
 
-  /* ========== 照片来源选择（相册 / 拍照） ========== */
-  .photo-sheet { padding: 8px 16px 20px; }
-  .photo-sheet-title { text-align: center; font-size: 13px; color: #8a8f99; padding: 10px 0 14px; }
-  .photo-option {
-    display: block; width: 100%; background: #fff; border: none;
-    border-bottom: 1px solid #eceef2; padding: 15px; font-size: 16px;
-    color: #1a1a1a; cursor: pointer; font-family: inherit;
-  }
-  .photo-option:active { background: #f5f6f8; }
-  .photo-option.cancel {
-    border-bottom: none; border-radius: 12px; margin-top: 10px;
-    background: #f5f6f8; color: #5a5f66; font-weight: 600;
-  }
-
   /* ========== 响应式：仅展示用户界面，不保留任何说明区域 ========== */
   @media (max-width: 460px) {
     body { padding: 0; align-items: stretch; }
@@ -441,19 +427,8 @@
     </div>
   </div>
 
-  <!-- 照片来源选择弹层（相册 / 拍照） -->
-  <div class="mask" id="photoSheet">
-    <div class="sheet photo-sheet">
-      <div class="photo-sheet-title">上传照片</div>
-      <button class="photo-option" onclick="pickPhoto('album')">从本地相册选择图片</button>
-      <button class="photo-option" onclick="pickPhoto('camera')">使用相机拍照上传</button>
-      <button class="photo-option cancel" onclick="closeMask('photoSheet')">取消</button>
-    </div>
-  </div>
-
-  <!-- 隐藏的文件选择器：album=相册 / camera=相机（移动端唤起对应系统能力，桌面端回退为文件选择器） -->
-  <input type="file" id="fileAlbum" accept="image/*" style="display:none">
-  <input type="file" id="fileCamera" accept="image/*" capture="environment" style="display:none">
+  <!-- 隐藏的文件选择器：不带 capture，移动端由系统弹出原生「相册/拍照」菜单，桌面端直接打开文件选择器 -->
+  <input type="file" id="filePhoto" accept="image/*" style="display:none">
 
   <div class="toast" id="toast"></div>
 </div>
@@ -604,7 +579,7 @@ function renderWizard(kind) {
     } else {
       html = '<div class="step-title">填写摄入量</div>'
         + '<input class="text-input" id="dtAmountInput" placeholder="如：一碗、300克、一杯" maxlength="20" value="' + escapeHtml(d.amount) + '">'
-        + '<div class="warn-tip" id="dtZeroTip" style="display:' + (isZeroAmount(d.amount) ? 'block' : 'none') + '">摄入量需大于 0</div>';
+        + '<div class="warn-tip" id="dtAmountTip" style="display:' + (amountError(d.amount) ? 'block' : 'none') + '">' + amountError(d.amount) + '</div>';
     }
   } else {
     var photoArea;
@@ -637,32 +612,40 @@ function renderWizard(kind) {
   var input = body.querySelector('.text-input');
   if (input) input.focus();
 
-  /* 摄入量输入时实时刷新「下一步」禁用态与提示 */
+  /* 摄入量输入时实时校验「数字+单位」格式，刷新「下一步」禁用态与错误提示 */
   if (kind === 'diet' && d.step === 2 && input) {
     input.addEventListener('input', function () {
       state.diet.amount = input.value;
+      var err = amountError(input.value);
       var btn = document.getElementById('dtNextBtn');
-      if (btn) btn.disabled = isZeroAmount(input.value);
-      var tip = document.getElementById('dtZeroTip');
-      if (tip) tip.style.display = isZeroAmount(input.value) ? 'block' : 'none';
+      if (btn) btn.disabled = !isValidAmount(input.value);
+      var tip = document.getElementById('dtAmountTip');
+      if (tip) { tip.textContent = err; tip.style.display = err ? 'block' : 'none'; }
     });
   }
 }
 
-/* 下一步是否禁用：运动时长 0小时0分钟 / 摄入量为 0 */
+/* 下一步是否禁用：运动时长 0小时0分钟 / 摄入量不满足「数字+单位」格式 */
 function isNextDisabled(kind, d) {
   if (kind === 'exercise' && d.step === 2) return d.durH === 0 && d.durM === 0;
-  if (kind === 'diet' && d.step === 2) return isZeroAmount(d.amount);
+  if (kind === 'diet' && d.step === 2) return !isValidAmount(d.amount);
   return false;
 }
 
-/* 摄入量是否为 0（支持「0」「0克」「0.0」等写法） */
-function isZeroAmount(v) {
+/* 摄入量格式校验：必须同时包含「数字（>0）+ 单位」。
+   返回错误文案；空值与合法值均返回 ''（空值仅禁用按钮，不展示错误） */
+function amountError(v) {
   var s = (v || '').trim();
-  if (!s) return false;
+  if (!s) return '';
   var m = s.match(/\d+(?:\.\d+)?/);
-  if (!m) return false;
-  return parseFloat(m[0]) === 0;
+  if (!m) return '需包含数字数值，请按「数字+单位」格式填写，如：300克、一碗';
+  if (parseFloat(m[0]) <= 0) return '数值需大于 0，请按「数字+单位」格式填写，如：300克、一碗';
+  if (!s.replace(m[0], '').trim()) return '需包含单位，请按「数字+单位」格式填写，如：300克、一碗';
+  return '';
+}
+
+function isValidAmount(v) {
+  return !!(v || '').trim() && !amountError(v);
 }
 
 function escapeHtml(s) {
@@ -958,16 +941,12 @@ document.getElementById('wheelSheet').addEventListener('click', function (e) {
 /* ================= 照片上传（真实文件读取） ================= */
 var photoKind = null;   // 当前正在为哪个流程选照片
 
-/* 点击「拍照 / 从相册选择」：唤起来源选择弹层 */
+/* 点击「拍照 / 从相册选择」：直接唤起系统能力。
+   移动端：系统弹出原生「相册 / 拍照」菜单（单一层级，无二次弹窗）；
+   桌面端：直接打开文件选择器。 */
 function addPhoto(kind) {
   photoKind = kind;
-  document.getElementById('photoSheet').classList.add('show');
-}
-
-/* 选择来源：相册 / 相机。移动端唤起对应系统能力，桌面端回退为文件选择器 */
-function pickPhoto(mode) {
-  closeMask('photoSheet');
-  var input = document.getElementById(mode === 'camera' ? 'fileCamera' : 'fileAlbum');
+  var input = document.getElementById('filePhoto');
   input.value = '';   // 允许重复选择同一文件
   input.click();
 }
@@ -987,16 +966,8 @@ function handlePhotoFile(file) {
   reader.readAsDataURL(file);
 }
 
-document.getElementById('fileAlbum').addEventListener('change', function () {
+document.getElementById('filePhoto').addEventListener('change', function () {
   handlePhotoFile(this.files && this.files[0]);
-});
-document.getElementById('fileCamera').addEventListener('change', function () {
-  handlePhotoFile(this.files && this.files[0]);
-});
-
-/* 点击遮罩空白处关闭照片来源弹层 */
-document.getElementById('photoSheet').addEventListener('click', function (e) {
-  if (e.target === this) closeMask('photoSheet');
 });
 
 function removePhoto(kind) {
