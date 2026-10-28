@@ -578,7 +578,7 @@ function renderWizard(kind) {
         + (endOver ? '<div class="warn-tip">结束时间超过当日 22:00，请调整打卡时间或缩短时长</div>' : '');
     } else {
       html = '<div class="step-title">填写摄入量</div>'
-        + '<input class="text-input" id="dtAmountInput" placeholder="如：一碗、300克、一杯" maxlength="20" value="' + escapeHtml(d.amount) + '">'
+        + '<input class="text-input" id="dtAmountInput" placeholder="如：300克、1碗、2杯" maxlength="20" value="' + escapeHtml(d.amount) + '">'
         + '<div class="warn-tip" id="dtAmountTip" style="display:' + (amountError(d.amount) ? 'block' : 'none') + '">' + amountError(d.amount) + '</div>';
     }
   } else {
@@ -638,9 +638,9 @@ function amountError(v) {
   var s = (v || '').trim();
   if (!s) return '';
   var m = s.match(/\d+(?:\.\d+)?/);
-  if (!m) return '需包含数字数值，请按「数字+单位」格式填写，如：300克、一碗';
-  if (parseFloat(m[0]) <= 0) return '数值需大于 0，请按「数字+单位」格式填写，如：300克、一碗';
-  if (!s.replace(m[0], '').trim()) return '需包含单位，请按「数字+单位」格式填写，如：300克、一碗';
+  if (!m) return '需包含数字数值，请按「数字+单位」格式填写，如：300克、1碗';
+  if (parseFloat(m[0]) <= 0) return '数值需大于 0，请按「数字+单位」格式填写，如：300克、1碗';
+  if (!s.replace(m[0], '').trim()) return '需包含单位，请按「数字+单位」格式填写，如：300克、1碗';
   return '';
 }
 
