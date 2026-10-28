@@ -155,7 +155,6 @@
   }
   .btn-big:disabled { background: #c9d4e2; cursor: not-allowed; }
   .btn-danger { background: #e25555; }
-  .btn-ghost { width: 100%; background: #fff; color: #1296db; border: 1px solid #1296db; border-radius: 24px; padding: 13px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; margin-top: 10px; }
   .btn-text { width: 100%; background: none; border: none; color: #8a8f99; font-size: 14px; padding: 12px; cursor: pointer; font-family: inherit; }
   .foot-note { font-size: 11px; color: #b6bcc7; text-align: center; margin-top: 10px; }
 
@@ -251,23 +250,6 @@
   .me-item .mi-note { font-size: 12px; color: #b6bcc7; }
   .me-item .mi-note.on { color: #1fa968; }
 
-  .infer-tag { display: inline-block; background: #fff7e8; color: #b97a1a; font-size: 11px; border-radius: 8px; padding: 3px 8px; margin-left: 6px; vertical-align: middle; }
-  .rank-row { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 12px; padding: 12px 14px; margin: 10px 12px 0; }
-  .rank-no { width: 26px; height: 26px; border-radius: 50%; background: #eef3f8; color: #5a5f66; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
-  .rank-row.top .rank-no { background: #ffcf5c; color: #7a5200; }
-  .rank-ava { width: 38px; height: 38px; border-radius: 50%; background: #e6ebf1; display: flex; align-items: center; justify-content: center; font-size: 17px; }
-  .rank-info { flex: 1; }
-  .rank-info .rn { font-size: 14px; font-weight: 600; color: #1a1a1a; }
-  .rank-info .rs { font-size: 11px; color: #9aa0aa; margin-top: 2px; }
-  .rank-days { font-size: 15px; font-weight: 800; color: #1296db; }
-  .team-card { background: #fff; border-radius: 14px; margin: 12px 12px 0; padding: 16px; }
-  .team-vs { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
-  .team-side { flex: 1; text-align: center; }
-  .team-side .tn { font-size: 14px; font-weight: 700; color: #1a1a1a; }
-  .team-side .tv { font-size: 22px; font-weight: 800; color: #1296db; margin-top: 4px; }
-  .team-side.red .tv { color: #e25555; }
-  .vs-badge { width: 40px; height: 40px; border-radius: 50%; background: #1a1a1a; color: #ffcf5c; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; }
-
   .time-chips { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
   .time-chips button {
     border: 1px solid #d9dee6; background: #fff; border-radius: 10px; padding: 8px 14px;
@@ -338,8 +320,6 @@
 
         <div class="quick-row">
           <button class="quick-item" onclick="openPage('page-analysis')"><div class="qi">📊</div><div class="qt">数据分析</div><div class="qs">解读体重…</div></button>
-          <button class="quick-item" onclick="showToast('网页原型演示：加群交流为小程序能力')"><div class="qi">👥</div><div class="qt">加群交流</div><div class="qs">一起打卡</div></button>
-          <button class="quick-item" onclick="showToast('网页原型演示：分享为小程序能力')"><div class="qi">🎁</div><div class="qt">分享成果</div><div class="qs">记录变化</div></button>
         </div>
 
         <div class="card">
@@ -348,40 +328,6 @@
           <div id="homeTrend"></div>
         </div>
         <div style="height:16px"></div>
-      </div>
-    </section>
-
-    <!-- ================= 排行榜 Tab（限定范围，保持原样） ================= -->
-    <section class="screen" id="tab-rank">
-      <div class="home-header"><span class="app-name">排行榜<span class="infer-tag">截图未提供 · 推断</span></span></div>
-      <div class="page-body">
-        <div class="rank-row top"><span class="rank-no">1</span><span class="rank-ava">🦊</span><div class="rank-info"><div class="rn">自律的狐狸</div><div class="rs">已连续打卡 21 天</div></div><span class="rank-days">21 天</span></div>
-        <div class="rank-row"><span class="rank-no">2</span><span class="rank-ava">🐼</span><div class="rank-info"><div class="rn">慢慢瘦的熊猫</div><div class="rs">已连续打卡 15 天</div></div><span class="rank-days">15 天</span></div>
-        <div class="rank-row"><span class="rank-no">3</span><span class="rank-ava">🐨</span><div class="rank-info"><div class="rn">考拉不熬夜</div><div class="rs">已连续打卡 9 天</div></div><span class="rank-days">9 天</span></div>
-        <div class="rank-row"><span class="rank-no">4</span><span class="rank-ava">🙂</span><div class="rank-info"><div class="rn">我（微信用户）</div><div class="rs">已连续打卡 1 天</div></div><span class="rank-days">1 天</span></div>
-        <div class="empty-hint">按连续打卡天数排名（推断结构，以实际小程序为准）</div>
-      </div>
-    </section>
-
-    <!-- ================= 组队PK Tab（限定范围，保持原样） ================= -->
-    <section class="screen" id="tab-team">
-      <div class="home-header"><span class="app-name">组队PK<span class="infer-tag">截图未提供 · 推断</span></span></div>
-      <div class="page-body">
-        <div class="team-card">
-          <div class="card-title">本周对战</div>
-          <div class="card-sub">两队比拼累计打卡天数</div>
-          <div class="team-vs">
-            <div class="team-side"><div class="tn">早起鸟队</div><div class="tv">32 天</div></div>
-            <div class="vs-badge">VS</div>
-            <div class="team-side red"><div class="tn">夜猫子队</div><div class="tv">28 天</div></div>
-          </div>
-        </div>
-        <div class="team-card">
-          <div class="card-title">我的队伍</div>
-          <div class="card-sub">还未加入队伍，创建或接受邀请后开始组队 PK</div>
-          <button class="btn-big" onclick="showToast('网页原型演示：组队为小程序能力')">创建队伍</button>
-        </div>
-        <div class="empty-hint">推断结构，以实际小程序为准</div>
       </div>
     </section>
 
@@ -395,9 +341,6 @@
         <div class="me-list">
           <button class="me-item" onclick="openBody()"><span>个人信息</span><span class="mi-r">✎</span></button>
           <button class="me-item" onclick="openReminder()"><span>打卡提醒 <span class="mi-note" id="reminderNote">未开启</span></span><span class="mi-r">⏰</span></button>
-          <button class="me-item" onclick="showToast('网页原型演示：最新活动')"><span>最新活动</span><span class="mi-r">☺</span></button>
-          <button class="me-item" onclick="showToast('网页原型演示：微信机器人为小程序能力')"><span>微信机器人</span><span class="mi-r">♡</span></button>
-          <button class="me-item" onclick="showToast('网页原型演示：在线客服')"><span>在线客服</span><span class="mi-r">🎧</span></button>          <button class="me-item" onclick="showToast('瘦身打卡助手 · 体重管理工具')"><span>关于我们</span><span class="mi-r">?</span></button>
         </div>
       </div>
     </section>
@@ -455,7 +398,7 @@
           <div class="ph-s" id="anaSub">本月体重、BMI、打卡习惯分析</div>
         </div>
         <div class="card report-card">
-          <div><div class="card-title" style="font-size:15px">月度分析报告</div><div class="card-sub">基于本月记录整理，可分享朋友圈</div></div>
+          <div><div class="card-title" style="font-size:15px">月度分析报告</div><div class="card-sub">基于本月记录自动整理</div></div>
           <button class="btn-primary" style="padding:8px 16px" onclick="showToast('网页原型演示：报告页截图未提供')">查看报告</button>
         </div>
         <div class="card" style="display:flex;align-items:center;gap:16px">
@@ -488,8 +431,6 @@
 
   <nav class="tabbar" id="tabbar">
     <button class="tab active" data-tab="tab-weight" onclick="switchTab('tab-weight')"><span class="ticon">⚖️</span>体重</button>
-    <button class="tab" data-tab="tab-rank" onclick="switchTab('tab-rank')"><span class="ticon">📊</span>排行榜</button>
-    <button class="tab" data-tab="tab-team" onclick="switchTab('tab-team')"><span class="ticon">🤝</span>组队PK</button>
     <button class="tab" data-tab="tab-me" onclick="switchTab('tab-me')"><span class="ticon">👤</span>我的</button>
   </nav>
 
@@ -553,7 +494,6 @@
       </div>
       <div class="succ-enc" id="succEnc">继续保持，明天再来打卡</div>
       <button class="btn-big" onclick="closeMask('m-success');openPage('page-analysis')">查看数据分析</button>
-      <button class="btn-ghost" onclick="showToast('网页原型演示：分享给好友为小程序能力')">⌗ 分享给好友</button>
       <button class="btn-text" onclick="closeMask('m-success');maybeDesktop()">关闭</button>
     </div>
   </div>
@@ -796,7 +736,8 @@ function renderRecords() {
   document.getElementById('recTrendSub').textContent = trendSub;
 
   // 趋势
-  var trendBox = document.getElementById('recTrend');  if (list.length >= 2) trendBox.innerHTML = '<div class="trend-wrap">' + trendSvg(list, 130) + '</div>';
+  var trendBox = document.getElementById('recTrend');
+  if (list.length >= 2) trendBox.innerHTML = '<div class="trend-wrap">' + trendSvg(list, 130) + '</div>';
   else trendBox.innerHTML = '<div class="empty-hint">已记录 ' + list.length + '/2 天，再记录 ' + (2 - list.length) + ' 次会生成曲线</div>';
 
   // 变化卡
