@@ -14,7 +14,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 48px;
     padding: 32px;
     min-height: 100vh;
   }
@@ -23,6 +22,7 @@
   .phone {
     width: 390px;
     height: 800px;
+    max-height: calc(100vh - 64px);
     background: #f5f6f8;
     border-radius: 40px;
     box-shadow: 0 24px 64px rgba(20, 24, 40, 0.22), 0 0 0 10px #20232a, 0 0 0 12px #3a3e47;
@@ -283,38 +283,18 @@
   }
   .mask.show .sheet { transform: translateY(0); }
 
-  /* ========== 右侧原型说明面板 ========== */
-  .panel { width: 340px; flex-shrink: 0; }
-  .panel h1 { font-size: 20px; margin-bottom: 6px; }
-  .panel .sub { font-size: 13px; color: #6b7280; margin-bottom: 20px; }
-  .panel-card { background: #fff; border-radius: 14px; padding: 18px 20px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-  .panel-card h2 { font-size: 14px; margin-bottom: 12px; color: #1a1a1a; }
-  .page-link {
-    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
-    background: none; border: none; cursor: pointer; font-family: inherit;
-    padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #1a1a1a;
-  }
-  .page-link:hover { background: #f0f4ff; }
-  .page-link .no {
-    width: 20px; height: 20px; border-radius: 50%; background: #2f6bf0; color: #fff;
-    font-size: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
-  .page-link .step-of { color: #8a8f99; font-size: 12px; }
-  .demo-row { display: flex; align-items: flex-start; gap: 8px; font-size: 12.5px; color: #4b5563; line-height: 1.6; margin-bottom: 10px; }
-  .demo-row:last-child { margin-bottom: 0; }
-  .demo-row .dot { width: 6px; height: 6px; border-radius: 50%; background: #2f6bf0; margin-top: 7px; flex-shrink: 0; }
-  .switch-row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
-  .switch { position: relative; width: 40px; height: 22px; cursor: pointer; }
-  .switch input { display: none; }
-  .switch .track { position: absolute; inset: 0; background: #d4d7dc; border-radius: 11px; transition: background 0.2s; }
-  .switch .track::after { content: ''; position: absolute; left: 2px; top: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-  .switch input:checked + .track { background: #2f6bf0; }
-  .switch input:checked + .track::after { left: 20px; }
-
-  @media (max-width: 860px) {
-    body { flex-direction: column; padding: 16px; gap: 24px; }
-    .panel { width: 100%; max-width: 390px; }
-    .phone { height: 720px; }
+  /* ========== 响应式：仅展示用户界面，不保留任何说明区域 ========== */
+  @media (max-width: 460px) {
+    body { padding: 0; align-items: stretch; }
+    .phone {
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      max-height: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .screens { bottom: env(safe-area-inset-bottom); }
   }
 </style>
 </head>
@@ -450,53 +430,6 @@
   <div class="toast" id="toast"></div>
 </div>
 
-<!-- ================= 原型说明面板 ================= -->
-<div class="panel">
-  <h1>健康打卡 · 可点击原型</h1>
-  <div class="sub">纯前端静态演示 · 假数据 · 共 4 个页面，页面间可真实跳转</div>
-
-  <div class="panel-card">
-    <h2>页面清单（点击跳转）</h2>
-    <button class="page-link" onclick="jumpTo('home')"><span class="no">1</span>首页 <span class="step-of">— 最短路径起点：两个核心入口</span></button>
-    <button class="page-link" onclick="jumpTo('exercise')"><span class="no">2</span>记录锻炼 <span class="step-of">— 时间→名称→时长→照片→提交</span></button>
-    <button class="page-link" onclick="jumpTo('diet')"><span class="no">3</span>记录饮食 <span class="step-of">— 时间→内容→摄入量→照片→提交</span></button>
-    <button class="page-link" onclick="jumpTo('weekly')"><span class="no">4</span>周报反馈 <span class="step-of">— 提交后落地页：本周统计</span></button>
-  </div>
-
-  <div class="panel-card">
-    <h2>可演示的关键状态</h2>
-    <div class="demo-row"><span class="dot"></span>打卡时间滚轮<b>小时仅 6-21</b>，范围外的数值不出现在列表里；时长仍为 0-24 小时 / 0-59 分</div>
-    <div class="demo-row"><span class="dot"></span><b>结束时间超 22:00</b>：21:00 打卡 + 1小时30分 → 预计结束 22:30，点「下一步」即拦截并提示调整</div>
-    <div class="demo-row"><span class="dot"></span><b>单日累计超 24 小时</b>：打开下方开关模拟今日已练 23小时30分钟，再选超过 30 分钟即被拦截</div>
-    <div class="demo-row"><span class="dot"></span>运动时长保持 <b>0小时0分钟</b>、「下一步」为禁用态，无法进入下一环节</div>
-    <div class="demo-row"><span class="dot"></span>饮食摄入量填 <b>0</b> 时，「下一步」同样禁用并提示需大于 0</div>
-    <div class="demo-row"><span class="dot"></span>第 2 步不输入名称/内容直接点「下一步」，触发必填校验提示</div>
-    <div class="demo-row"><span class="dot"></span>照片步骤可点击添加 / 移除模拟照片，也可跳过直接提交</div>
-    <div class="switch-row" style="margin-top:12px">
-      <span>模拟今日已练 23小时30分钟</span>
-      <label class="switch"><input type="checkbox" id="mockToggle" onchange="toggleMockHistory(this.checked)"><span class="track"></span></label>
-    </div>
-    <div class="switch-row" style="margin-top:12px">
-      <span>周报「今天开始」空状态预览</span>
-      <label class="switch"><input type="checkbox" id="emptyToggle" onchange="toggleWeeklyEmpty(this.checked)"><span class="track"></span></label>
-    </div>
-  </div>
-
-  <div class="panel-card">
-    <h2>三层校验</h2>
-    <div class="demo-row"><span class="dot"></span><b>第一层 · 输入拦截</b>：滚轮小时锁 6-21、时长步骤实时显示预计结束时间与今日累计，越界红字提示</div>
-    <div class="demo-row"><span class="dot"></span><b>第二层 · 提交前校验</b>：点「下一步」即时校验打卡时间；点「确认提交」全量校验结束时间与单日累计</div>
-    <div class="demo-row"><span class="dot"></span><b>第三层 · 服务端复核</b>：原型内以 <code>apiCreateExercise</code> 模拟接口独立复算，通过后才落库跳转（真实项目对应云函数）</div>
-  </div>
-
-  <div class="panel-card">
-    <h2>最短路径</h2>
-    <div class="demo-row"><span class="dot"></span>首页 → 记录锻炼（4 步）→ 确认提交 → 周报反馈</div>
-    <div class="demo-row"><span class="dot"></span>首页 → 记录饮食（4 步）→ 确认提交 → 周报反馈</div>
-    <div class="demo-row"><span class="dot"></span>首页 → 查看本周周报（快捷入口，直达统计页）</div>
-  </div>
-</div>
-
 <script>
 /* ================= 常量与工具 ================= */
 var EXERCISE_STEPS = ['打卡时间', '运动名称', '运动时长', '上传照片'];
@@ -542,10 +475,9 @@ function endTimeInfo(d) {
 
 /* 模拟数据层（对应真实项目里的云数据库） */
 var mockDB = {
-  historyMinutes: 0,   // 右侧开关模拟的「今日已练」
+  historyMinutes: 0,   // 今日已练时长（示例数据，保持为 0）
   sessionMinutes: 0    // 本次会话已成功提交的累计
 };
-var MOCK_HISTORY_MINUTES = 23 * 60 + 30;
 
 function todayTotalMinutes() {
   return mockDB.historyMinutes + mockDB.sessionMinutes;
@@ -587,12 +519,6 @@ function navigateHomeOnly() {
   document.getElementById('screen-home').classList.add('active');
   document.getElementById('navTitle').textContent = TITLES.home;
   document.getElementById('navBack').classList.remove('show');
-}
-function jumpTo(id) {
-  if (id === 'exercise') { openWizard('exercise'); return; }
-  if (id === 'diet') { openWizard('diet'); return; }
-  if (id === 'weekly') { openWeekly(); return; }
-  goHome();
 }
 document.getElementById('navBack').addEventListener('click', goBack);
 
@@ -917,12 +843,6 @@ function renderWeekRange() {
     (monday.getMonth() + 1) + '月' + monday.getDate() + '日 - ' + (sunday.getMonth() + 1) + '月' + sunday.getDate() + '日';
 }
 
-function toggleWeeklyEmpty(empty) {
-  document.getElementById('weeklyStats').style.display = empty ? 'none' : '';
-  document.getElementById('weeklyEmpty').style.display = empty ? '' : 'none';
-  if (state.stack[state.stack.length - 1] !== 'weekly') openWeekly();
-}
-
 /* ================= 滚轮选择器（打卡时间 / 运动时长） ================= */
 var wheelCtx = null;
 
@@ -1025,12 +945,6 @@ function showAlert(title, body) {
   document.getElementById('alertTitle').textContent = title;
   document.getElementById('alertBody').innerHTML = body;
   document.getElementById('alertModal').classList.add('show');
-}
-
-/* 面板开关：模拟「今日已练 23小时30分钟」，用于演示单日 24 小时上限 */
-function toggleMockHistory(on) {
-  mockDB.historyMinutes = on ? MOCK_HISTORY_MINUTES : 0;
-  if (state.stack[state.stack.length - 1] === 'exercise') renderWizard('exercise');
 }
 
 /* 点击遮罩空白处关闭底部弹层 */
